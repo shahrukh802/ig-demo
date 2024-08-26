@@ -1,0 +1,52 @@
+services:
+  postgresql:
+    container_name: igate-postgresql
+    image: postgres:14.2-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: shahrukh
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - my-network
+
+  server:
+    container_name: igate-server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    restart: always
+    env_file:
+      - ./server/.env
+    depends_on:
+      - postgresql
+    networks:
+      - my-network
+    command: "/bin/bash startup.sh"
+
+  client:
+    container_name: igate-client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    restart: always
+    env_file:
+      - ./client/.env
+    environment:
+      - NODE_ENV=development
+    command: npm run start
+    depends_on:
+      - server
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
