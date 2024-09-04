@@ -15,7 +15,7 @@ export const login = async (username: string, password: string) => {
 };
 export const logout = () => {
     // Logic for logging out
-    localStorage.clear()
+    localStorage.removeItem("authToken")
 };
 export const isAuthenticated = () => {
     // Check if user is authenticated

@@ -1,8 +1,8 @@
-import { ChartConfiguration } from "chart.js";
+import { ChartConfiguration, ChartTypeRegistry } from "chart.js";
 
-export const getChartConfig = (chartData: any) => {
+export const getChartConfig = (chartData: any, type: keyof ChartTypeRegistry) => {
     const chartConfig: ChartConfiguration = {
-        type: "bar",
+        type: type,
         data: chartData,
         options: {
             scales: {

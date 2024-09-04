@@ -22,7 +22,7 @@ export const DashboardLayout = ({ children }: IProps) => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 w-full">{children}</div>
+          <main className="flex-1 w-full overflow-x-hidden">{children}</main>
         </div>
       </div>
       <Drawer

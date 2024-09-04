@@ -35,22 +35,48 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def analyze_data(df: pd.DataFrame) -> dict:
     # Group data by CLEAN_DateTime and sum Quantity
-    df_time_series = df.groupby('CLEAN_DateTime').agg({'Quantity': 'sum'}).reset_index()
+    df_time_series = df.groupby('CLEAN_DateTime').agg({
+        'Quantity': 'sum',
+        'OrderId': 'count'  # Count of orders
+    }).reset_index()
 
-    # Prepare data for Chart.js
-    chart_data = {
+    # Convert any numpy types to Python native types
+    df_time_series['Quantity'] = df_time_series['Quantity'].astype(int)
+    df_time_series['OrderId'] = df_time_series['OrderId'].astype(int)
+
+    # Calculate average quantity per order at each time point
+    df_time_series['Avg_Quantity_Per_Order'] = df_time_series['Quantity'] / df_time_series['OrderId']
+    df_time_series['Avg_Quantity_Per_Order'] = df_time_series['Avg_Quantity_Per_Order'].astype(float)
+
+
+
+    # Prepare data for Chart.js time series
+    time_series_chart_data = {
+        "type": "bar",
         "labels": df_time_series['CLEAN_DateTime'].dt.strftime('%Y-%m-%d %H:%M:%S').tolist(),
-        "datasets": [{
-            "label": "Quantity Over Time",
-            "data": df_time_series['Quantity'].tolist(),
-            "backgroundColor": "rgba(75, 192, 192, 0.2)",
-            "borderColor": "rgba(75, 192, 192, 1)",
-            "borderWidth": 1,
-            "fill": False
-        }]
+        "datasets": [
+            {
+                "label": "Total Quantity Over Time",
+                "data": df_time_series['Quantity'].tolist(),
+                "backgroundColor": "rgba(75, 192, 192, 1)",
+                "borderColor": "rgba(75, 192, 192, 1)",
+                "borderWidth": 1,
+                "fill": False
+            },
+            {
+                "label": "Average Quantity Per Order Over Time",
+                "data": df_time_series['Avg_Quantity_Per_Order'].tolist(),
+                "backgroundColor": "rgba(153, 102, 255, 1)",
+                "borderColor": "rgba(153, 102, 255, 1)",
+                "borderWidth": 1,
+                "fill": False
+            }
+        ]
     }
 
     return {
-        "chart_data": chart_data,
-        "orders_per_region": df['Region'].value_counts().to_dict()
+        "chart_data": time_series_chart_data,
+        "total_products": int(df['SKU'].nunique()),
+        "total_users": int(df['OrderId'].nunique()),
+        "total_profit": int(df['Quantity'].sum())
     }
